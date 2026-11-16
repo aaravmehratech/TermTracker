@@ -151,8 +151,4 @@ struct task {
 + ADVANTAGE: Infinite scaling. 
 + You can add tasks infinitely until your physical RAM is exhausted.
 + Deleting a task is instant because you simply rewire the *next pointer.
-
-- DISADVANTAGE: I/O Complexity.
-- You can no longer save the program in one line of code. 
-- The program must traverse the entire linked list, saving each node individually while stripping out the memory pointers (which become invalid the moment the program closes).
 ```
