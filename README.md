@@ -1,138 +1,158 @@
 # TermTracker
 
-TermTracker is a lightweight, terminal-based application written in C designed to help students manage their daily academic lives. It features a customizable weekly timetable, a priority-based to-do list, and an attendance tracker to ensure you maintain your required attendance percentage.
+**Developed by Aarav Mehra**
 
-All user data is stored locally in a binary file (`termtracker.dat`), and the app includes a secure login system using password hashing.
+TermTracker is a completely standalone, terminal-based application written in C. It acts as a comprehensive academic planner designed to help students strictly manage their daily schedule, track actionable tasks, and algorithmically monitor their attendance to prevent falling below mandatory academic thresholds.
 
-## Features
+The entire application runs entirely in your local terminal window, utilizing ANSI escape codes to render a fully colorized, dynamic user interface. All user data is securely stored locally in a binary file (`termtracker.dat`).
 
-* **Account System**: User login with password hashing (djb2 algorithm) and a security question for recovery.
-* **Timetable Manager**: Track classes across a 5-day week, 10 periods a day. Supports combined/double classes.
-* **Priority To-Do List**: Add tasks with High, Medium, or Low priority. Sort, mark as complete, and clear finished tasks.
-* **Attendance Tracker**: Log Present, Absent, or Cancelled classes. Calculates overall percentage and tells you exactly how many classes you need to attend (or can afford to miss) to maintain a 75% threshold.
+---
+
+## Complete User Guide: Menus & Navigation
+
+Once you log in, you are presented with the main menu. Here is exactly how to use every feature, input trick, and sub-menu in the application.
+
+### 1. To-Do List
+This menu manages your actionable tasks.
+
+* **1 Add task:** Prompts you to type a task description, and then asks for a priority level: `1` for High (Red), `2` for Medium (Yellow), or `3` for Low (Green).
+* **2 Mark task done:** Asks for the task number. It will cross the task out, turn it green, and dim the text to show it is completed.
+* **3 Delete task:** Asks for a task number and completely erases it from existence, shifting the rest of the list up.
+* **4 Sort by priority:** Runs a sorting algorithm that instantly groups your pending tasks by priority, pushing all High-priority tasks to the very top, and moving completed items to the bottom.
+* **5 Remove completed tasks:** A cleanup utility. It sweeps through your entire list, deletes anything marked "done," and condenses the array to free up space.
+
+### 2. Attendance Marker
+This menu is your daily tracker.
+
+* **1 Mark attendance:** 
+  * It will ask for a date (`DD-MM-YYYY`). If you just press **`Enter`**, it defaults to today's date automatically.
+  * It loops through your scheduled classes for that day. Type `P` for Present, `A` for Absent, or `C` for Cancelled. 
+  * *Trick:* If a class hasn't happened yet, or you don't want to log it, just press **`Enter`** to skip it without saving any status.
+* **2 See a day's attendance:** Enter any past date to see exactly what classes you attended or missed on that specific day.
+* **3 All subjects summary:** Prints a master table showing every subject, your attended/total ratio, a visual percentage bar, and a mathematical calculation of whether you are "Safe" or in "Danger" regarding the 75% threshold.
+* **4 Subject statistics:** Select a specific subject to see a deep-dive analysis. It shows total classes held, exactly how many you missed, and lists the exact dates of your latest 10 absences so you can spot patterns.
+
+### 3. Timetable
+This is where you build your weekly schedule. It runs on a 5-day, 10-period grid.
+
+* **1 Change one period:** Allows you to select a specific day and a specific period (1-10) to edit without touching the rest of your schedule.
+* **2 Change a whole day:** Loops through periods 1 to 10 for a single day, letting you build the day from scratch.
+* **3 Change all days:** The nuclear option; prompts you to build your entire Monday-Friday schedule from scratch.
+
+**Special Input Rules for the Timetable:**
+* **The Asterisk (`*`) - Combined Classes:** If you have a double period (e.g., a 2-hour lab), type your subject followed by an asterisk (e.g., `Physics*`). The program will automatically link this period and the next one together. They will count as a single, combined block in your attendance tracker.
+* **Pressing `Enter` (Blank):** If you have a free period, do not type anything. Just press the `Enter` key. The program will record it as a blank slot (`-`) and the attendance tracker will ignore it.
+* **The Period (`.`) - Skip/Keep:** When editing a whole day, if you want to keep the subject that is already saved in a period, simply type a period (`.`) and press Enter. It will skip to the next period without erasing your old data.
+
+---
+
+## Core Features Detailed
+
+TermTracker is divided into four main functional blocks:
+
+### 1. Secure Account System
+When you first run TermTracker, it forces you to create an account.
+* **Password Hashing:** It does not store your password in plain text. It uses the `djb2` hashing algorithm to convert your password into a mathematical integer.
+* **Account Recovery:** You must provide a custom security question and answer during setup, which is also securely hashed and used if you ever lock yourself out.
+
+### 2. Timetable Manager
+* **Structure:** It supports a standard 5-day academic week (Monday to Friday) with up to 10 periods per day, automatically inserting a lunch break between period 6 and 7.
+
+### 3. Priority To-Do List
+* **Smart Sorting:** You can trigger a bubble sort algorithm that instantly reorganizes your list, bringing pending High-priority tasks to the very top.
+
+### 4. Advanced Attendance Tracker
+* **Predictive Math:**
+  * If you are *above* 75%, it calculates exactly how many consecutive classes you can afford to skip before you drop into the danger zone.
+  * If you are *below* 75%, it calculates exactly how many consecutive classes you must attend to claw your way back to safety.
 
 ---
 
 ## How to Compile and Run
 
-Make sure you have a C compiler (like GCC) installed on your system.
+Make sure you have a C compiler installed on your system.
 
 **1. Compile the code:**
 ```bash
 gcc -o termtracker termtracker.c
 ```
 
-**2. Run the application (Linux/macOS):**
+**2. Run the application:**
 ```bash
 ./termtracker
 ```
 
-*(If you are on Windows, run `termtracker.exe` instead).*
-
 ---
 
-## Data Structures Explained
+## Data Structures
 
-The application organizes and stores your data using three primary C `struct` types. Here is a breakdown of how they work:
+TermTracker organizes and stores your data using three primary C `struct` types. Here is a granular breakdown of how the memory is laid out:
 
-### 1. `struct task` (To-Do List Item)
+### 1. The Task Structure (`struct task`)
+This structure represents a single to-do list item.
 ```c
 struct task {
-    char text[60]; // The actual description of the task
+    char text[60]; // A string holding the actual description of the task
     int pri;       // Priority level: 1 (High), 2 (Medium), 3 (Low)
     int done;      // Boolean flag: 0 (Pending), 1 (Completed)
 };
 ```
-This structure represents a single actionable item. By keeping the priority (`pri`) as a simple integer, the program can easily run a sorting algorithm to bring high-priority, pending tasks to the top of your list.
+* **Design Choice:** By keeping the priority (`pri`) and completion status (`done`) as simple integers, the program can execute sorting algorithms extremely fast by simply comparing integer weights.
 
-### 2. `struct rec` (Attendance Record)
+### 2. The Attendance Record (`struct rec`)
+This structure logs a single instance of attendance for a specific class on a specific day.
 ```c
 struct rec {
-    int date;      // Stored as YYYYMMDD (e.g., 20261116)
+    int date;      // Stored mathematically (e.g., 20261116)
     int period;    // The period number (0 to 9)
-    char sub[20];  // Subject name
+    char sub[20];  // Subject name (e.g., "Mathematics")
     char st;       // Status: 'P' (Present), 'A' (Absent), 'C' (Cancelled)
 };
 ```
-Instead of storing complex formatted date strings, the date is packed mathematically into a single integer. This makes it highly efficient for the computer to search, sort, and retrieve your attendance history.
+* **Design Choice:** Instead of storing complex formatted date strings (like "16-11-2026"), the date is packed mathematically into a single integer (`YYYYMMDD`). This makes it highly efficient for the CPU to search, sort, and retrieve your chronological attendance history using basic greater-than or less-than operators.
 
-### 3. `struct data` (The Central Database)
+### 3. The Central Database (`struct data`)
+This serves as the master container for the entire application's state.
 ```c
 struct data {
     char name[16];                // User's display name
-    unsigned int pass;            // Hashed password (not plain text)
-    char q[80];                   // Security question
-    unsigned int ans;             // Hashed answer to the security question
-    int ntask;                    // Current number of active tasks
-    int nrec;                     // Current number of attendance records
-    char tt[DAYS][PERIODS][20];   // 3D array for the Timetable [Day][Period][Subject String]
-    struct task tasks[MAXTASK];   // Array of to-do list tasks (Max 100)
-    struct rec recs[MAXREC];      // Array of attendance records (Max 3000)
+    unsigned int pass;            // djb2 Hashed password 
+    char q[80];                   // Security question string
+    unsigned int ans;             // djb2 Hashed answer
+    int ntask;                    // Current active count of tasks
+    int nrec;                     // Current active count of attendance records
+    char tt[DAYS][PERIODS][20];   // 3D Array: [5 Days][10 Periods][20-char Subject]
+    struct task tasks[MAXTASK];   // Array of to-do list structs (Max 100)
+    struct rec recs[MAXREC];      // Array of attendance structs (Max 3000)
 };
 ```
-This serves as the master container for the entire application. When the app starts, it reads this entire structure from `termtracker.dat` in one single chunk using `fread()`. When you make a change (like adding a task), it overwrites the file using `fwrite()`. 
+* **Design Choice:** TermTracker relies on **static, fixed-size arrays** (e.g., allocating space for exactly 3000 records immediately).
+* **The Benefit:** Because the entire application state is grouped into this single `struct data db;` block in memory, the program can save everything to your hard drive in one single, lightning-fast line of code: `fwrite(&db, sizeof(struct data), 1, f);`.
 
 ---
 
-## Memory Management: Fixed Arrays vs. Linked Lists
+## Future Memory Optimizations (Dynamic vs. Static)
 
-TermTracker currently uses **static, fixed-size arrays** (e.g., `MAXTASK 100` and `MAXREC 3000`) rather than dynamic memory allocation. 
+While the current static array implementation allows for blazing-fast save/load times, it operates with strict limits (`MAXTASK 100` and `MAXREC 3000`) and wastes memory if those slots are empty.
 
-### Why Fixed Arrays?
-* **The Pros:** It allows the program to save and load the entire `struct data` state to a file in a single, lightning-fast line of code. 
-* **The Cons:** It wastes a bit of memory. Even if you only have 2 tasks, the program still allocates memory for 100. Furthermore, if you hit 3,001 attendance records, the app runs out of space.
+A future optimization would be to migrate from fixed arrays to **Dynamic Memory Allocation** using **Linked Lists**.
 
-### How Linked Lists & Dynamic Memory Would Change It
-Instead of demanding space for 3000 records immediately, dynamic memory allows a program to ask the operating system for memory *on the fly* using `malloc()`.
-
-If implemented, the `task` struct would become a **Linked List** node:
+If implemented, the static task array would be replaced by a dynamic chain:
 ```c
 struct task {
     char text[60];
     int pri;
     int done;
-    struct task *next; // Pointer to the next task in the chain
+    struct task *next; // Memory pointer to the next task in the chain
 };
 ```
-* **The Advantage:** There is no `MAXTASK` limit. You can add tasks infinitely until your RAM runs out. Deleting a task in the middle of the list is also faster because you just rewire the pointer, rather than shifting a massive array up or down.
-* **The Trade-off:** Saving a linked list to a file is much harder. You can't just `fwrite` the whole database in one line anymore; you have to loop through the chain and save each item individually, carefully ignoring the memory pointers (since memory addresses change every time you restart the program).
 
----
+```diff
++ ADVANTAGE: Infinite scaling. 
++ You can add tasks infinitely until your physical RAM is exhausted.
++ Deleting a task is instant because you simply rewire the *next pointer.
 
-## Git & GitHub Setup Guide
-
-If you want to host this code on GitHub, you need to make sure your personal data and passwords (stored in `termtracker.dat`) are ignored by Git.
-
-### Step 1: Initial Local Setup (VS Code Terminal)
-Run these commands inside your project folder:
-```bash
-# 1. Turn the folder into a Git repository
-git init
-
-# 2. Create a .gitignore file so your personal data isn't uploaded
-echo -e "termtracker.dat\ntermtracker\n*.exe\n*.out\n.vscode/" > .gitignore
-
-# 3. Add all your code to the staging area
-git add .
-
-# 4. Save this version of your code
-git commit -m "Initial commit: Added TermTracker source code and README"
-```
-
-### Step 2: Push to GitHub
-1. Go to GitHub and create a **New Repository** (do not add a README or .gitignore from the GitHub website).
-2. Copy the URL of your new repository.
-3. Run these commands to upload your code:
-```bash
-git remote add origin <YOUR_GITHUB_REPO_URL_HERE>
-git branch -M main
-git push -u origin main
-```
-
-### Step 3: Updating Your Code Later
-Whenever you change `termtracker.c` or this README, run these three commands to send the updates to GitHub:
-```bash
-git add .
-git commit -m "Describe what you changed here"
-git push
+- DISADVANTAGE: I/O Complexity.
+- You can no longer save the program in one line of code. 
+- The program must traverse the entire linked list, saving each node individually while stripping out the memory pointers (which become invalid the moment the program closes).
 ```
