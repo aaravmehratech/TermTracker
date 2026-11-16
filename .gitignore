@@ -1,0 +1,5 @@
+termtracker.dat
+termtracker
+*.exe
+*.out
+.vscode/
