@@ -1,7 +1,7 @@
 # TermTracker
 
 **Aarav Mehra**
-** I - 51, IT SEM-1**
+**I - 51, IT SEM-1**
 
 TermTracker is a completely standalone, terminal-based application written in C. It acts as a comprehensive academic planner designed to help students strictly manage their daily schedule, track actionable tasks, and algorithmically monitor their attendance to prevent falling below mandatory academic thresholds.
 
